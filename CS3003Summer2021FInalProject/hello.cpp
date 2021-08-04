@@ -1,11 +1,15 @@
 // a first program with
 // two comment lines
 int main() {
-    char c;
-    int i;
-    c = 'h';
-    i = c + 3;
-    qqq = 999;
-    x = y + 5;
-    while (1)  x = 42;
+    int j;    
+	int m;
+	long z;
+	m=2;
+	m=m^2;
+	z=4141;
+    for(j=0;j<=10;j=j+1;)
+    {
+	m=m^j;
+	m=m+1;
+    }
 } // main

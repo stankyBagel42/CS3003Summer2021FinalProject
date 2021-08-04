@@ -39,10 +39,21 @@ public class TypeTransformer {
 		if (typ2 == Type.FLOAT)
 			t1 = new Unary (new Operator(Operator.I2F), t1);
 		return new Binary(b.op.intMap(b.op.val), t1,t2);
-            } else if (typ1 == Type.FLOAT) { 
-	        if (typ2 == Type.INT)	
-			t2 = new Unary (new Operator(Operator.I2F), t2);
-                return new Binary(b.op.floatMap(b.op.val), t1,t2);
+            } else if(typ1 == Type.LONG) {
+            	if (typ2 == Type.FLOAT) {
+            		t1 = new Unary (new Operator(Operator.L2F), t1);
+            	return new Binary(b.op.longMap(b.op.val),t1,t2);
+            	}
+            }
+            else if (typ1 == Type.FLOAT) { 
+		        if (typ2 == Type.INT) {
+				t2 = new Unary (new Operator(Operator.I2F), t2);
+	                return new Binary(b.op.floatMap(b.op.val), t1,t2);
+		        }
+	            if (typ2 == Type.LONG) {
+	    			t2 = new Unary (new Operator(Operator.L2F), t2);
+	    			return new Binary(b.op.floatMap(b.op.val), t1,t2);
+	            }
             } else if (typ1 == Type.CHAR) 
                 return new Binary(b.op.charMap(b.op.val), t1,t2);
             else if (typ1 == Type.BOOL) 
@@ -56,6 +67,8 @@ public class TypeTransformer {
 	    Expression t = T (u.term, tm);
 	    if (typ == Type.INT)
 		return new Unary(u.op.intMap(u.op.val), t);
+	    if (typ == Type.LONG)
+		return new Unary(u.op.longMap(u.op.val), t);
 	    else if (typ == Type.FLOAT)
 		return new Unary(u.op.floatMap(u.op.val), t);
 	    else if (typ == Type.CHAR)
@@ -78,6 +91,8 @@ public class TypeTransformer {
 			if (param_types.get(i).equals(Type.FLOAT)) {
 				if (current_arg_type.equals(Type.INT))
 					c.args.set(i, new Unary(new Operator(Operator.I2F), T(c.args.get(i), tm)));	
+				else if(current_arg_type.equals(Type.LONG))
+					c.args.set(i, new Unary(new Operator(Operator.L2F), T(c.args.get(i), tm)));
 				else
 					c.args.set(i, T(c.args.get(i), tm));
 			}
@@ -109,6 +124,10 @@ public class TypeTransformer {
                 if (srctype == Type.INT) {
                     src = new Unary(new Operator(Operator.I2F), src);
                     srctype = Type.FLOAT;
+                }
+                if (srctype == Type.LONG) {
+                	src = new Unary(new Operator(Operator.L2F), src);
+                	srctype = Type.FLOAT;
                 }
             }
             else if (ttype == Type.INT) {
@@ -158,6 +177,8 @@ public class TypeTransformer {
 			if (param_types.get(i).equals(Type.FLOAT)) {
 				if (current_arg_type.equals(Type.INT))
 					c.args.set(i, new Unary(new Operator(Operator.I2F), T(c.args.get(i), tm)));	
+				else if (current_arg_type.equals(Type.LONG))
+					c.args.set(i, new Unary(new Operator(Operator.L2F), T(c.args.get(i), tm)));	
 				else
 					c.args.set(i, T(c.args.get(i), tm));
 			}

@@ -171,7 +171,7 @@ public class CodeGen {
 		if (symtable.containsKey(target)) {
 			Type target_type = symtable.getType((Variable) a.target);
 			String store;
-			if (target_type.equals(Type.INT) || target_type.equals(Type.CHAR) || target_type.equals(Type.BOOL)) {
+			if (target_type.equals(Type.INT) || target_type.equals(Type.LONG) || target_type.equals(Type.CHAR) || target_type.equals(Type.BOOL)) {
 				store = "istore";
 			} else if (target_type.equals(Type.FLOAT)) {
 				store = "fstore";
@@ -184,7 +184,8 @@ public class CodeGen {
 			Type descriptor = global_symtable.get(target.id);
 			if (descriptor.equals(Type.INT) || 
 			descriptor.equals(Type.BOOL) || 
-			descriptor.equals(Type.CHAR))
+			descriptor.equals(Type.CHAR) ||
+			descriptor.equals(Type.LONG))
 				type = "I";
 			else // it's a float
 				type = "F";
@@ -273,7 +274,7 @@ public class CodeGen {
 	
 	if (e_type.equals(Type.FLOAT)) 
 		print_type = "F";
-	else if (e_type.equals(Type.INT))
+	else if (e_type.equals(Type.INT)||e_type.equals(Type.LONG))
 		print_type = "I";
 	else if (e_type.equals(Type.CHAR)) 
 		print_type = "C";
@@ -321,6 +322,8 @@ public class CodeGen {
             if (b.op.ArithmeticOp( ))
                 if (typeOf(b.term1,sym)== Type.FLOAT)
                     return (Type.FLOAT);
+                else if (typeOf(b.term1,sym)==Type.LONG)
+                	return Type.LONG;
                 else return (Type.INT);
             if (b.op.RelationalOp( ) || b.op.BooleanOp( )) 
                 return (Type.BOOL);
@@ -331,6 +334,7 @@ public class CodeGen {
             if (u.op.NotOp( ))        return (Type.BOOL);
             else if (u.op.NegateOp( )) return typeOf(u.term,sym);
             else if (u.op.intOp( ))    return (Type.INT);
+            else if (u.op.longOp( ))    return (Type.LONG);
             else if (u.op.floatOp( )) return (Type.FLOAT);
             else if (u.op.charOp( ))  return (Type.CHAR);
 	    System.out.println("nothing in Unary!");
@@ -355,6 +359,9 @@ public class CodeGen {
         } if (op.val.equals(Operator.INT_DIV)) {
 			jfile.writeln("idiv");
             return; 
+		} if (op.val.equals(Operator.INT_EXPONENT)) {
+			// IF THERES A PROBLEM WITH THE JASMIN FILE THIS IS PROBABLY THE CAUSE
+			jfile.writeln("iexp");
 		}
         // student exercise
 	if (op.val.equals(Operator.INT_LT)) {
@@ -485,6 +492,9 @@ public class CodeGen {
         } if (op.val.equals(Operator.FLOAT_DIV)) {
 			jfile.writeln("fdiv");
             return; 
+		} if (op.val.equals(Operator.FLOAT_EXPONENT)) {
+			jfile.writeln("fexp");
+			return;
 		}
 	// these are some boolean operators which Jasmin has no intructions for
 	// It turns out it's simply more efficient to operate on 32bit ints!
@@ -560,7 +570,7 @@ public class CodeGen {
 		if (symtable.containsKey(v)) {
 			Type v_type = symtable.getType(v);
 			String load = "null";
-			if (v_type.equals(Type.INT) || v_type.equals(Type.CHAR)
+			if (v_type.equals(Type.INT) || v_type.equals(Type.CHAR) || v_type.equals(Type.LONG)
 				|| v_type.equals(Type.BOOL)) {
 				load = "iload";
 			} else if (v_type.equals(Type.FLOAT)) {
@@ -573,7 +583,7 @@ public class CodeGen {
 		else { // this node is trying to assign a global
 			String type;
 			Type descriptor = global_symtable.get(v.id);
-			if (descriptor.equals(Type.INT) || 
+			if (descriptor.equals(Type.INT) ||  descriptor.equals(Type.LONG) ||
 			descriptor.equals(Type.BOOL) || 
 			descriptor.equals(Type.CHAR))
 				type = "I";

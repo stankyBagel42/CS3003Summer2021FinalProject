@@ -179,7 +179,9 @@ public class Parser {
         Type t = null;
 	if (token.type().equals(TokenType.Int)) {
 		t = Type.INT;
-	} else if (token.type().equals(TokenType.Bool)) {
+	} else if (token.type().equals(TokenType.Long)) {
+		t = Type.LONG;
+	}else if (token.type().equals(TokenType.Bool)) {
 		t = Type.BOOL;
 	} else if (token.type().equals(TokenType.Char)) {
 		t = Type.CHAR;
@@ -187,7 +189,7 @@ public class Parser {
 		t = Type.FLOAT;
 	} else if (token.type().equals(TokenType.Void)) {
 		t = Type.VOID;
-	} else error("int | bool | float | char");
+	} else error("int | long | bool | float | char");
         // student exercise
         return t;          
     }
@@ -211,6 +213,8 @@ public class Parser {
 		s = ifStatement();
 	} else if (token.type().equals(TokenType.While)) {
 		s = whileStatement();
+	} else if (token.type().equals(TokenType.For)) {
+		s = forStatement();
 	} else if (token.type().equals(TokenType.Return)) {
 		s = returnStatement();
 		match(TokenType.Semicolon);
@@ -283,6 +287,22 @@ public class Parser {
 	match(TokenType.RightParen);
 	Statement st = statement();
         return new Loop(test, st);  // student exercise
+    }
+    
+    private Loop forStatement() {
+        // forStatement --> for ( Expression ) Statement
+    	match(token.type());
+    	match(TokenType.LeftParen);
+    	Statement init = statement();
+    	Expression condition = expression();
+    	match(TokenType.Semicolon);
+    	Statement repeated_thing = statement();
+    	match(TokenType.RightParen);
+    	match(TokenType.LeftBrace);
+    	Block for_block=statements();
+    	match(TokenType.RightBrace);
+    	for_block.members.add(repeated_thing);
+    	return new Loop(init,condition,for_block);
     }
 
     private Return returnStatement() {
@@ -358,11 +378,12 @@ public class Parser {
     private Expression term () {
         // Term --> Factor { MultiplyOp Factor }
         Expression e = factor();
-        while (isMultiplyOp()) {
+        while (isMultiplyOp() || isExponentOp()) {
             Operator op = new Operator(match(token.type()));
             Expression term2 = factor();
             e = new Binary(op, e, term2);
         }
+
         return e;
     }
   
@@ -411,6 +432,7 @@ public class Parser {
             match(TokenType.RightParen);
             e = new Unary(op, term);
         } else error("Identifier | Literal | ( | Type");
+
         return e;
     }
 
@@ -437,7 +459,10 @@ public class Parser {
 	} else if (token.type().equals(TokenType.FloatLiteral)) {
 		float f_val = Float.parseFloat(match(token.type()));
 		val = new FloatValue(f_val);
-	} else {
+	} else if (token.type().equals(TokenType.LongLiteral)) {
+		long l_val = Long.parseLong(match(token.type()));
+		val = new LongValue(l_val);
+	}else {
 		char c_val = match(token.type()).charAt(0);
 		val = new CharValue(c_val); 
 	} 
@@ -453,6 +478,10 @@ public class Parser {
     private boolean isMultiplyOp( ) {
         return token.type().equals(TokenType.Multiply) ||
                token.type().equals(TokenType.Divide);
+    }
+    
+    private boolean isExponentOp() {
+    	return token.type().equals(TokenType.Exponent);
     }
     
     private boolean isUnaryOp( ) {
@@ -474,6 +503,7 @@ public class Parser {
     
     private boolean isType( ) {
         return token.type().equals(TokenType.Int)
+        	|| token.type().equals(TokenType.Long)
             || token.type().equals(TokenType.Bool) 
             || token.type().equals(TokenType.Float)
             || token.type().equals(TokenType.Char)
@@ -482,7 +512,7 @@ public class Parser {
     
     private boolean isLiteral( ) {
         return token.type().equals(TokenType.IntLiteral) ||
-            isBooleanLiteral() ||
+            isBooleanLiteral() || token.type().equals(TokenType.LongLiteral) ||
             token.type().equals(TokenType.FloatLiteral) ||
             token.type().equals(TokenType.CharLiteral);
     }
@@ -495,7 +525,7 @@ public class Parser {
     public static void main(String args[]) {
 //        Parser parser  = new Parser(new Lexer(args[0])); //Picks the file name and feeds it to the lexer.
 //        Parser parser  = new Parser(new Lexer("hello.cpp"));
-        Parser parser  = new Parser(new Lexer("undeclaredVariable.cpp"));
+        Parser parser  = new Parser(new Lexer("hello.cpp"));
         Program prog = parser.program();
         
         prog.applyTypeSystemRules();

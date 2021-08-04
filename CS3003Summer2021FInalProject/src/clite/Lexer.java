@@ -61,7 +61,15 @@ public class Lexer {
             } else if (isDigit(ch)) { // int or float literal
                 String number = concat(digits);
                 if (ch != '.')  // int Literal
+                {
+                	long num;
+                	num = Long.parseLong(number);
+                	if (num >2147483647 || num < -2147483647) {
+                		return Token.mkLongLiteral(number);
+                	}
                     return Token.mkIntLiteral(number);
+                	
+                }
                 number += concat(digits);
                 return Token.mkFloatLiteral(number);
             } else switch (ch) {
@@ -92,10 +100,13 @@ public class Lexer {
 
 	    case '-': ch = nextChar();
 		return Token.minusTok;
-
+	    
 	    case '*': ch = nextChar();
-		return Token.multiplyTok;
-
+	    return Token.multiplyTok;
+	    
+	    case '^': ch = nextChar();
+	    return Token.exponentTok;
+            
 	    case '[': ch = nextChar();
 		return Token.leftBracketTok;
 	

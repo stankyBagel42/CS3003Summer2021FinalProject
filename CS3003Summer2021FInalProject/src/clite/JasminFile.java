@@ -52,7 +52,7 @@ public class JasminFile extends FileWriter {
 			String global_sig = ".field public static ";
 			global_sig += global.v.id;
 			if (global.t.equals(Type.INT) || global.t.equals(Type.BOOL)
-				|| global.t.equals(Type.CHAR))
+				|| global.t.equals(Type.CHAR) || global.t.equals(Type.LONG))
 				global_sig += " I";	
 			else
 				global_sig += " V";
@@ -98,14 +98,14 @@ public class JasminFile extends FileWriter {
 		method_sig += func_name;
 		method_sig += "(";
 		for (Declaration param : params) {
-			if (param.t.equals(Type.INT) || param.t.equals(Type.CHAR) ||				param.t.equals(Type.BOOL))
+			if (param.t.equals(Type.INT) || param.t.equals(Type.CHAR) || param.t.equals(Type.BOOL) ||param.t.equals(Type.LONG))
 			method_sig += "I";
 			else
 			method_sig += "F";
 		}	
 		method_sig += ")";
 		if (return_type.equals(Type.INT) || return_type.equals(Type.CHAR) 
-			|| return_type.equals(Type.BOOL))
+			|| return_type.equals(Type.BOOL) || return_type.equals(Type.LONG))
 			method_sig += "I";
 		else if (return_type.equals(Type.FLOAT)) 
 			method_sig += "F";

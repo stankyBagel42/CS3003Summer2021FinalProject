@@ -146,6 +146,8 @@ public class Semantics {
             return new IntValue(v1.intValue( ) * v2.intValue( ));
         if (op.val.equals(Operator.INT_DIV)) 
             return new IntValue(v1.intValue( ) / v2.intValue( ));
+        if (op.val.equals(Operator.INT_EXPONENT))
+        	return new IntValue((int)Math.pow(v1.intValue(), v2.intValue()));
         // student exercise
 	if (op.val.equals(Operator.INT_LT)) {
 	    return new BoolValue(v1.intValue() < v2.intValue());
@@ -155,6 +157,26 @@ public class Semantics {
 	    return new BoolValue(v1.intValue() == v2.intValue());
 	if (op.val.equals(Operator.INT_NE))
 	    return new BoolValue(v1.intValue() != v2.intValue());
+	
+	    if (op.val.equals(Operator.LONG_PLUS)) 
+	        return new LongValue(v1.longValue( ) + v2.longValue( ));
+	    if (op.val.equals(Operator.LONG_MINUS)) 
+	        return new LongValue(v1.longValue( ) - v2.longValue( ));
+	    if (op.val.equals(Operator.LONG_TIMES)) 
+	        return new LongValue(v1.longValue( ) * v2.longValue( ));
+	    if (op.val.equals(Operator.LONG_DIV)) 
+	        return new LongValue(v1.longValue( ) / v2.longValue( ));
+	    if (op.val.equals(Operator.LONG_EXPONENT))
+	    	return new LongValue((long)Math.pow(v1.longValue(), v2.longValue()));
+	    // student exercise
+	if (op.val.equals(Operator.LONG_LT)) {
+	    return new BoolValue(v1.longValue() < v2.longValue());
+	} if (op.val.equals(Operator.LONG_GT)) {
+	    return new BoolValue(v1.longValue() > v2.longValue());
+	} if (op.val.equals(Operator.LONG_EQ))
+	    return new BoolValue(v1.longValue() == v2.longValue());
+	if (op.val.equals(Operator.LONG_NE))
+	    return new BoolValue(v1.longValue() != v2.longValue());
 
 	if (op.val.equals(Operator.FLOAT_LT))
 	    return new BoolValue(v1.floatValue() < v2.floatValue());
@@ -173,6 +195,8 @@ public class Semantics {
             return new FloatValue(v1.floatValue( ) * v2.floatValue( ));
         if (op.val.equals(Operator.FLOAT_DIV)) 
             return new FloatValue(v1.floatValue( ) / v2.floatValue( ));
+        if (op.val.equals(Operator.FLOAT_EXPONENT)) 
+            return new FloatValue((float)Math.pow(v1.floatValue(), v2.floatValue()));
 
 	if (op.val.equals(Operator.BOOL_LT)) 
             return new BoolValue(v1.intValue( ) < v2.intValue( ));
@@ -197,10 +221,16 @@ public class Semantics {
             return new BoolValue(!v.boolValue( ));
         else if (op.val.equals(Operator.INT_NEG))
             return new IntValue(-v.intValue( ));
+        else if (op.val.equals(Operator.LONG_NEG))
+            return new LongValue(-v.longValue( ));
         else if (op.val.equals(Operator.FLOAT_NEG)) {
             return new FloatValue(-v.floatValue( ));
         } else if (op.val.equals(Operator.I2F)) 
             return new FloatValue((float)(v.intValue( ))); 
+        else if (op.val.equals(Operator.L2F)) 
+        	return new FloatValue((float)(v.longValue( ))); 
+        else if (op.val.equals(Operator.F2L)) 
+        	return new LongValue((long)(v.floatValue( ))); 
         else if (op.val.equals(Operator.F2I))
             return new IntValue((int)(v.floatValue( )));
         else if (op.val.equals(Operator.C2I))

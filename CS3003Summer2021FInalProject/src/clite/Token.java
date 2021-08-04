@@ -17,6 +17,7 @@ public class Token {
     public static final Token floatTok = new Token(TokenType.Float, "float");
     public static final Token ifTok = new Token(TokenType.If, "if");
     public static final Token intTok = new Token(TokenType.Int, "int");
+    public static final Token longTok = new Token(TokenType.Long, "long");
     public static final Token mainTok = new Token(TokenType.Main, "main");
     public static final Token trueTok = new Token(TokenType.True, "true");
     public static final Token whileTok = new Token(TokenType.While, "while");
@@ -43,57 +44,87 @@ public class Token {
     public static final Token minusTok = new Token(TokenType.Minus, "-");
     public static final Token multiplyTok = new Token(TokenType.Multiply, "*");
     public static final Token divideTok = new Token(TokenType.Divide, "/");
+    public static final Token exponentTok = new Token(TokenType.Exponent, "^");
     public static final Token andTok = new Token(TokenType.And, "&&");
     public static final Token orTok = new Token(TokenType.Or, "||");
+    // Our added tokens
+    // Exponent - Binary Operator
+    // For Loop - Control Structure 
+    public static final Token forTok = new Token(TokenType.For, "for");
+    // Long - Data type
+
 
     private TokenType type;
     private String value = "";
 
-    private Token (TokenType t, String v) {
+    // Constructor for tokens
+    private Token(TokenType t, String v) {
         type = t;
         value = v;
+        // Compare the number of characters in the token to EOF, if it has less characters than the EOF token, it's
+        // cool to be a reserved word/type (the longest is 6 in "return")
         if (t.compareTo(TokenType.Eof) < 0) // If t is a reserved word and type 
-	{ 
+        {
+            // get the place where this tokenType was defined in the enum (in TokenType.java)
             int ti = t.ordinal();
+            // Put the value in the reserved strings list
             reserved[ti] = v;
+            // Place a reference to this token object in the token list
             token[ti] = this;
         }
     }
 
-    public TokenType type( ) { return type; }
+    // kind of like GET TYPE but its just type instead >:(
+    public TokenType type() {
+        return type;
+    }
 
-    public String value( ) { return value; }
+    // kind of like GET VALUE but its just value instead >:(
+    public String value() {
+        return value;
+    }
 
-    public static Token keyword  ( String name ) {
+    // Convert from string to keyword token (IF ITS A KEYWORD), otherwise return a new identifier since its an identifier
+    public static Token keyword(String name) {
         char ch = name.charAt(0);
+        // keywords dont start w/ caps, so return a new identifier token with the name
         if (ch >= 'A' && ch <= 'Z') return mkIdentTok(name);
+        // Go thru all of the keywords to see if name is the same as any of them
         for (int i = 0; i < KEYWORDS; i++)
-           if (name.equals(reserved[i]))  return token[i];
+            if (name.equals(reserved[i])) return token[i];
+        // If we haven't returned yet, its not a keyword and it is an identifier
         return mkIdentTok(name);
     } // keyword
 
-    public static Token mkIdentTok (String name) {
+    // Make identifier
+    public static Token mkIdentTok(String name) {
         return new Token(TokenType.Identifier, name);
     }
 
-    public static Token mkIntLiteral (String name) {
+    public static Token mkIntLiteral(String name) {
         return new Token(TokenType.IntLiteral, name);
     }
 
-    public static Token mkFloatLiteral (String name) {
+    public static Token mkLongLiteral(String name) {
+        return new Token(TokenType.LongLiteral, name);
+    }
+
+    public static Token mkFloatLiteral(String name) {
         return new Token(TokenType.FloatLiteral, name);
     }
 
-    public static Token mkCharLiteral (String name) {
+    public static Token mkCharLiteral(String name) {
         return new Token(TokenType.CharLiteral, name);
     }
 
-    public String toString ( ) {
+    public String toString() {
+        // If this token's type is less in length than the identifier token, just return the token's value
+        // (because its not an identifier). Else, return the type and the value since its an identifier
         if (type.compareTo(TokenType.Identifier) < 0) return value;
         return type + "\t" + value;
     } // toString
 
-    public static void main (String[] args) {
+    public static void main(String[] args) {
         System.out.println(eofTok);
         System.out.println(whileTok);
     }

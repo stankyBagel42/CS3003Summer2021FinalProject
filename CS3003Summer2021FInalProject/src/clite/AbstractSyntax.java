@@ -254,6 +254,7 @@ class ArrayDecl extends Declaration {
 class Type {
     // Type = int | bool | char | float | void
     final static Type INT = new Type("int");
+    final static Type LONG = new Type("long");
     final static Type BOOL = new Type("bool");
     final static Type CHAR = new Type("char");
     final static Type FLOAT = new Type("float");
@@ -268,7 +269,7 @@ class Type {
 
     // returns the equivaled Jasmin type descriptor
     public String to_jasmin() {
-	if(this.equals(Type.INT) || this.equals(Type.BOOL) || this.equals(Type.CHAR))
+	if(this.equals(Type.INT) || this.equals(Type.BOOL) || this.equals(Type.CHAR) || this.equals(Type.LONG))
 		return "I";
 	else if (this.equals(Type.FLOAT))
 		return "F";
@@ -285,7 +286,6 @@ abstract class Statement {
 	boolean hasReturn() {
 		return false;
 	}
-
 }
 
 class Skip extends Statement {
@@ -361,9 +361,12 @@ class Loop extends Statement {
 // Loop = Expression test; Statement body
     Expression test;
     Statement body;
-
+    Statement init=null;
     Loop (Expression t, Statement b) {
         test = t; body = b;
+    }
+    Loop (Statement i, Expression t, Statement b){
+    	init=i;test=t;body=b;
     }
 
 	boolean hasReturn() {
@@ -464,7 +467,7 @@ class ArrayRef extends VariableRef {
 }
 	
 abstract class Value extends Expression {
-    // Value = IntValue | BoolValue |
+    // Value = IntValue | BoolValue | LongValue |
     //         CharValue | FloatValue
     protected Type type;
     protected boolean undef = true;
@@ -484,6 +487,11 @@ abstract class Value extends Expression {
         return ' ';
     }
     
+    long longValue () {
+    	assert false : "should never reach here";
+    	return ' ';
+    }
+    
     float floatValue ( ) {
         assert false : "should never reach here";
         return 0.0f;
@@ -495,6 +503,7 @@ abstract class Value extends Expression {
 
     static Value mkValue (Type type) {
         if (type == Type.INT) return new IntValue( );
+        if (type == Type.LONG) return new LongValue( );
         if (type == Type.BOOL) return new BoolValue( );
         if (type == Type.CHAR) return new CharValue( );
         if (type == Type.FLOAT) return new FloatValue( );
@@ -522,6 +531,30 @@ class IntValue extends Value {
     public boolean equals(Object obj) {
     	IntValue iv = (IntValue) obj;
 	return iv.value == this.value;
+    }
+
+}
+
+class LongValue extends Value {
+    private long value = 0;
+
+    LongValue ( ) { type = Type.LONG; }
+
+    LongValue (long v) { this( ); value = v; undef = false; }
+
+    long longValue ( ) {
+        assert !undef : "reference to undefined int value";
+        return value;
+    }
+
+    public String toString( ) {
+        if (undef)  return "undef";
+        return "" + value;
+    }
+
+    public boolean equals(Object obj) {
+    	LongValue lv = (LongValue) obj;
+	return lv.value == this.value;
     }
 
 }
@@ -597,6 +630,9 @@ class Binary extends Expression {
         op = o; term1 = l; term2 = r;
     } // binary
 	
+    public String toString() {
+    	return "Operator: "+op+". Terms: "+term1+","+term2;
+    }
 }
 
 class Unary extends Expression {
@@ -607,7 +643,9 @@ class Unary extends Expression {
     Unary (Operator o, Expression e) {
         op = o; term = e;
     } // unary
-
+    public String toString() {
+    	return "Operator: "+op+". Term: "+term;
+    }
 }
 
 class CallExpression extends Expression {
@@ -648,12 +686,14 @@ class Operator {
     final static String PLUS = "+";
     final static String MINUS = "-";
     final static String TIMES = "*";
+    final static String EXPONENT = "^";
     final static String DIV = "/";
     // UnaryOp = !    
     final static String NOT = "!";
     final static String NEG = "-NEG"; //This has been changed from "-" to "-NEG" to avoid ambiguity with MINUS
     // CastOp = int | float | char
     final static String INT = "int";
+    final static String LONG = "long";
     final static String FLOAT = "float";
     final static String CHAR = "char";
     // Typed Operators
@@ -668,9 +708,25 @@ class Operator {
     final static String INT_PLUS = "INT+";
     final static String INT_MINUS = "INT-";
     final static String INT_TIMES = "INT*";
+    final static String INT_EXPONENT = "INT^";
     final static String INT_DIV = "INT/";
     // UnaryOp = !    
     final static String INT_NEG = "INT-NEG";
+    // RelationalOp = < | <= | == | != | >= | >
+    final static String LONG_LT = "INT<";
+    final static String LONG_LE = "INT<=";
+    final static String LONG_EQ = "INT==";
+    final static String LONG_NE = "INT!=";
+    final static String LONG_GT = "INT>";
+    final static String LONG_GE = "INT>=";
+    // ArithmeticOp = + | - | * | /
+    final static String LONG_PLUS = "INT+";
+    final static String LONG_MINUS = "INT-";
+    final static String LONG_TIMES = "INT*";
+    final static String LONG_EXPONENT = "LONG^";
+    final static String LONG_DIV = "INT/";
+    // UnaryOp = !    
+    final static String LONG_NEG = "INT-NEG";
     // RelationalOp = < | <= | == | != | >= | >
     final static String FLOAT_LT = "FLOAT<";
     final static String FLOAT_LE = "FLOAT<=";
@@ -681,6 +737,7 @@ class Operator {
     // ArithmeticOp = + | - | * | /
     final static String FLOAT_PLUS = "FLOAT+";
     final static String FLOAT_MINUS = "FLOAT-";
+    final static String FLOAT_EXPONENT = "FLOAT^";
     final static String FLOAT_TIMES = "FLOAT*";
     final static String FLOAT_DIV = "FLOAT/";
     // UnaryOp = !    
@@ -702,8 +759,12 @@ class Operator {
     // Type specific cast
     final static String I2F = "I2F";
     final static String F2I = "F2I";
+    final static String L2F = "L2F";
+    final static String F2L = "F2L";
     final static String C2I = "C2I";
     final static String I2C = "I2C";
+    final static String C2L = "C2L";
+    final static String L2C = "L2C";
     
     String val;
     
@@ -719,39 +780,50 @@ class Operator {
     }
     boolean ArithmeticOp ( ) {
         return val.equals(PLUS) || val.equals(MINUS)
-            || val.equals(TIMES) || val.equals(DIV)
+            || val.equals(TIMES) || val.equals(DIV) || val.equals(EXPONENT)
             || val.equals(INT_PLUS) || val.equals(INT_MINUS)
-            || val.equals(INT_TIMES) || val.equals(INT_DIV)
-            || val.equals(FLOAT_PLUS) || val.equals(FLOAT_MINUS)
+            || val.equals(INT_TIMES) || val.equals(INT_DIV) || val.equals(INT_EXPONENT)
+            || val.equals(LONG_PLUS) || val.equals(LONG_MINUS)
+            || val.equals(LONG_TIMES) || val.equals(LONG_DIV) || val.equals(LONG_EXPONENT)
+            || val.equals(FLOAT_PLUS) || val.equals(FLOAT_MINUS) || val.equals(FLOAT_EXPONENT)
             || val.equals(FLOAT_TIMES) || val.equals(FLOAT_DIV);
     }
     boolean NotOp ( ) { return val.equals(NOT) ; }
-    boolean NegateOp ( ) { return (val.equals(NEG) || val.equals(INT_NEG) || 
+    boolean NegateOp ( ) { return (val.equals(NEG) || val.equals(INT_NEG) ||  val.equals(LONG_NEG) ||
 				   val.equals(FLOAT_NEG)); }
+    boolean longOp () {return val.equals(LONG);}
     boolean intOp ( ) { return val.equals(INT); }
     boolean floatOp ( ) { return val.equals(FLOAT); }
     boolean charOp ( ) { return val.equals(CHAR); }
 
     final static String intMap[ ] [ ] = {
         {PLUS, INT_PLUS}, {MINUS, INT_MINUS},
-        {TIMES, INT_TIMES}, {DIV, INT_DIV},
+        {TIMES, INT_TIMES}, {EXPONENT, INT_EXPONENT}, {DIV, INT_DIV},
         {EQ, INT_EQ}, {NE, INT_NE}, {LT, INT_LT},
         {LE, INT_LE}, {GT, INT_GT}, {GE, INT_GE},
         {NEG, INT_NEG}, {FLOAT, I2F}, {CHAR, I2C}
     };
-
+    
+    final static String longMap[ ] [ ] = {
+            {PLUS, LONG_PLUS}, {MINUS, LONG_MINUS},
+            {TIMES, LONG_TIMES}, {EXPONENT, LONG_EXPONENT}, {DIV, LONG_DIV},
+            {EQ, LONG_EQ}, {NE, LONG_NE}, {LT, LONG_LT},
+            {LE, LONG_LE}, {GT, LONG_GT}, {GE, LONG_GE},
+            {NEG, LONG_NEG}, {FLOAT, L2F}, {CHAR, L2C}
+        };
+    
     final static String floatMap[ ] [ ] = {
         {PLUS, FLOAT_PLUS}, {MINUS, FLOAT_MINUS},
-        {TIMES, FLOAT_TIMES}, {DIV, FLOAT_DIV},
+        {TIMES, FLOAT_TIMES},  {EXPONENT, FLOAT_EXPONENT}, {DIV, FLOAT_DIV},
         {EQ, FLOAT_EQ}, {NE, FLOAT_NE}, {LT, FLOAT_LT},
         {LE, FLOAT_LE}, {GT, FLOAT_GT}, {GE, FLOAT_GE},
-        {NEG, FLOAT_NEG}, {INT, F2I}
+        {NEG, FLOAT_NEG}, {INT, F2I}, {LONG,F2L}
     };
 
     final static String charMap[ ] [ ] = {
         {EQ, CHAR_EQ}, {NE, CHAR_NE}, {LT, CHAR_LT},
         {LE, CHAR_LE}, {GT, CHAR_GT}, {GE, CHAR_GE},
-        {INT, C2I}
+        {INT, C2I}, {LONG, C2L}
     };
 
     final static String boolMap[ ] [ ] = {
@@ -774,6 +846,10 @@ class Operator {
 
     final static public Operator floatMap (String op) {
         return map (floatMap, op);
+    }
+    
+    final static public Operator longMap (String op) {
+    	return map(longMap, op);
     }
 
     final static public Operator charMap (String op) {
